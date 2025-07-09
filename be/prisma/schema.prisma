@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum GenderEnums {
+  MALE
+  FEMALE
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  firstname   String
+  lastname    String
+  age         Int
+  gender      GenderEnums
+  avatar      String?
+  email       String        @unique
+  password    String
+  UserPosts   UserPosts[]
+  UserMessage UserMessage[]
+}
+
+model Posts {
+  id        Int         @id @default(autoincrement())
+  likes     Int
+  comment   String
+  UserPosts UserPosts[]
+}
+
+model Messages {
+  id          Int           @id @default(autoincrement())
+  content     String
+  UserMessage UserMessage[]
+}
+
+model UserPosts {
+  user_id Int
+  post_id Int
+
+  user User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  post Posts @relation(fields: [post_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, post_id])
+}
+
+model UserMessage {
+  user_id    Int
+  message_id Int
+
+  user    User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  message Messages @relation(fields: [message_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, message_id])
+}
