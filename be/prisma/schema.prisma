@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -19,17 +13,25 @@ enum GenderEnums {
   FEMALE
 }
 
+enum RequestStatus {
+  PENDING
+  ACCEPETED
+  REJECTED
+}
+
 model User {
-  id          Int           @id @default(autoincrement())
-  firstname   String
-  lastname    String
-  age         Int
-  gender      GenderEnums
-  avatar      String?
-  email       String        @unique
-  password    String
-  UserPosts   UserPosts[]
-  UserMessage UserMessage[]
+  id               Int             @id @default(autoincrement())
+  firstname        String
+  lastname         String
+  age              Int
+  gender           GenderEnums
+  avatar           String?
+  email            String          @unique
+  password         String
+  UserPosts        UserPosts[]
+  UserMessage      UserMessage[]
+  sentRequests     FriendRequest[] @relation("SentRequests")
+  recievedRequests FriendRequest[] @relation("RecieveRequests")
 }
 
 model Posts {
@@ -63,4 +65,22 @@ model UserMessage {
   message Messages @relation(fields: [message_id], references: [id], onDelete: Cascade)
 
   @@id([user_id, message_id])
+}
+
+model FriendRequest {
+  id         Int           @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  status     RequestStatus
+  createdAt  DateTime      @default(now())
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  reciever User @relation("RecieveRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+}
+
+model Friendship {
+  id    Int      @id @default(autoincrement())
+  user1 Int
+  user2 Int
+  since DateTime
 }
