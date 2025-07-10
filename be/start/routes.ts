@@ -15,7 +15,7 @@ router.get('/api/profile', (ctx) => new UsersController().getDetails(ctx)).use(m
 
 // friend request endpoints
 router
-  .get('/api/search-user', (ctx) => new UsersController().searchUsers(ctx))
+  .post('/api/search-user', (ctx) => new UsersController().searchUsers(ctx))
   .use(middleware.user())
 router
   .post('/api/add-friend/:friendId', (ctx) => new UsersController().addFriend(ctx))

@@ -219,20 +219,33 @@ export default class UsersController {
 
   public async searchUsers(ctx: HttpContext) {
     try {
-      let firstname = ctx.request.input('firstname')
-      if (!firstname) {
+      let { firstname, lastname } = ctx.request.only(['firstname', 'lastname'])
+
+      let searchParams: Record<string, any> = {}
+
+      if (firstname)
+        searchParams.firstname = {
+          equals: firstname,
+          mode: 'insensitive',
+        }
+
+      if (lastname)
+        searchParams.lastname = {
+          equals: lastname,
+          mode: 'insensitive',
+        }
+
+      if (Object.keys(searchParams).length === 0) {
         return ctx.response.status(400).json({
           msg: 'Input fields cannot be left empty',
         })
       }
 
-      let userExists = await prisma.user.findFirst({
-        where: {
-          firstname,
-        },
+      let userExists = await prisma.user.findMany({
+        where: searchParams,
       })
 
-      if (!userExists) {
+      if (!userExists || userExists.length === 0) {
         return ctx.response.status(404).json({
           msg: 'No such user found',
         })
