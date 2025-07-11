@@ -1,6 +1,7 @@
 import UsersController from '#controllers/users_controller'
 import router from '@adonisjs/core/services/router'
 import { middleware } from './kernel.js'
+import PostsController from '#controllers/posts_controller'
 
 // user endpoints
 router.post('/api/signup', (ctx) => new UsersController().registerUser(ctx))
@@ -30,4 +31,14 @@ router
   .use(middleware.user())
 router
   .get('/api/view-friends', (ctx) => new UsersController().viewFriends(ctx))
+  .use(middleware.user())
+router.post('/api/add-post', (ctx) => new PostsController().makePost(ctx)).use(middleware.user())
+router
+  .patch('/api/update-post/:postId', (ctx) => new PostsController().editPost(ctx))
+  .use(middleware.user())
+router
+  .delete('/api/delete-post/:postId', (ctx) => new PostsController().deletePost(ctx))
+  .use(middleware.user())
+router
+  .patch('/api/like-post/:postId', (ctx) => new PostsController().likePost(ctx))
   .use(middleware.user())

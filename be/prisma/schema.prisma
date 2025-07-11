@@ -28,7 +28,7 @@ model User {
   avatar           String?
   email            String          @unique
   password         String
-  UserPosts        UserPosts[]
+  likedPost        Int[]
   UserMessage      UserMessage[]
   sentRequests     FriendRequest[] @relation("SentRequests")
   recievedRequests FriendRequest[] @relation("RecieveRequests")
@@ -36,29 +36,24 @@ model User {
 
   friendsInitiated Friendship[] @relation("FriendshipUser1")
   friendsReceived  Friendship[] @relation("FriendshipUser2")
+  Posts            Posts[]
 }
 
 model Posts {
-  id        Int         @id @default(autoincrement())
-  likes     Int
-  comment   String
-  UserPosts UserPosts[]
+  id      Int     @id @default(autoincrement())
+  likes   Int?    @default(0)
+  comment String?
+  author  Int
+  body    String
+  title   String
+
+  user User @relation(fields: [author], references: [id], onDelete: Cascade)
 }
 
 model Messages {
   id          Int           @id @default(autoincrement())
   content     String
   UserMessage UserMessage[]
-}
-
-model UserPosts {
-  user_id Int
-  post_id Int
-
-  user User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  post Posts @relation(fields: [post_id], references: [id], onDelete: Cascade)
-
-  @@id([user_id, post_id])
 }
 
 model UserMessage {
