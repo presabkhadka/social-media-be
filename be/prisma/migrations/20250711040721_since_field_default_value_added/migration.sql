@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Friendship" ALTER COLUMN "since" SET DEFAULT CURRENT_TIMESTAMP;

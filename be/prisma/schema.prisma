@@ -32,6 +32,10 @@ model User {
   UserMessage      UserMessage[]
   sentRequests     FriendRequest[] @relation("SentRequests")
   recievedRequests FriendRequest[] @relation("RecieveRequests")
+  Friendship       Friendship[]
+
+  friendsInitiated Friendship[] @relation("FriendshipUser1")
+  friendsReceived  Friendship[] @relation("FriendshipUser2")
 }
 
 model Posts {
@@ -79,8 +83,14 @@ model FriendRequest {
 }
 
 model Friendship {
-  id    Int      @id @default(autoincrement())
-  user1 Int
-  user2 Int
-  since DateTime
+  id      Int      @id @default(autoincrement())
+  user1   User     @relation("FriendshipUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user1Id Int
+  user2   User     @relation("FriendshipUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  user2Id Int
+  since   DateTime @default(now())
+  User    User?    @relation(fields: [userId], references: [id])
+  userId  Int?
+
+  @@unique([user1Id, user2Id])
 }

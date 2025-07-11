@@ -28,3 +28,6 @@ router
 router
   .patch('/api/accept-request/:requestId', (ctx) => new UsersController().acceptFriendRequest(ctx))
   .use(middleware.user())
+router
+  .get('/api/view-friends', (ctx) => new UsersController().viewFriends(ctx))
+  .use(middleware.user())

@@ -394,8 +394,58 @@ export default class UsersController {
         },
       })
 
+      await prisma.friendship.create({
+        data: {
+          user1Id: requestExists.senderId,
+          user2Id: requestExists.receiverId,
+        },
+      })
+
       ctx.response.status(200).json({
         msg: 'Friend request accepted',
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async viewFriends(ctx: HttpContext) {
+    try {
+      let email = ctx.email
+
+      let currentUser = await prisma.user.findFirst({
+        where: {
+          email,
+        },
+      })
+
+      if (!currentUser) {
+        return ctx.response.status(404).json({
+          msg: 'No such user found',
+        })
+      }
+
+      let userId = currentUser.id
+
+      const userWithFriends = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          friendsInitiated: { include: { user2: true } },
+          friendsReceived: { include: { user1: true } },
+        },
+      })
+
+      let friends = [
+        ...userWithFriends!.friendsInitiated.map((f) => f.user2),
+        ...userWithFriends!.friendsReceived.map((f) => f.user1),
+      ]
+
+      let totalFriends = friends.length
+
+      ctx.response.status(200).json({
+        totalFriends,
       })
     } catch (error) {
       return ctx.response.status(500).json({
