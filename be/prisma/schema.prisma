@@ -37,17 +37,19 @@ model User {
   friendsInitiated Friendship[] @relation("FriendshipUser1")
   friendsReceived  Friendship[] @relation("FriendshipUser2")
   Posts            Posts[]
+  Comment          Comment[]
 }
 
 model Posts {
-  id      Int     @id @default(autoincrement())
-  likes   Int?    @default(0)
-  comment String?
+  id      Int      @id @default(autoincrement())
+  likes   Int?     @default(0)
+  comment String[]
   author  Int
   body    String
   title   String
 
-  user User @relation(fields: [author], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [author], references: [id], onDelete: Cascade)
+  Comment Comment[]
 }
 
 model Messages {
@@ -88,4 +90,15 @@ model Friendship {
   userId  Int?
 
   @@unique([user1Id, user2Id])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  comment   String
+  authorId  Int
+  postId    Int
+  createdAt DateTime @default(now())
+
+  author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post   Posts @relation(fields: [postId], references: [id], onDelete: Cascade)
 }

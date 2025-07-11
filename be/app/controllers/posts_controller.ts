@@ -220,4 +220,173 @@ export default class PostsController {
       })
     }
   }
+
+  public async commentPost(ctx: HttpContext) {
+    try {
+      let postId = Number(ctx.params.postId)
+      let email = ctx.email
+
+      let { comment } = ctx.request.only(['comment'])
+
+      if (!comment) {
+        return ctx.response.status(400).json({
+          msg: 'Input fields cannot be left empty',
+        })
+      }
+
+      if (!postId) {
+        return ctx.response.status(400).json({
+          msg: 'Post id not present in the params',
+        })
+      }
+
+      let currentUser = await prisma.user.findFirst({
+        where: {
+          email,
+        },
+      })
+
+      if (!currentUser) {
+        return ctx.response.status(404).json({
+          msg: 'No such user found',
+        })
+      }
+
+      await prisma.comment.create({
+        data: {
+          comment,
+          authorId: currentUser.id,
+          postId: postId,
+        },
+      })
+
+      ctx.response.status(200).json({
+        msg: 'Comment added successfully',
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async editComment(ctx: HttpContext) {
+    try {
+      let email = ctx.email
+      let commentId = Number(ctx.params.commentId)
+      let { comment } = ctx.request.only(['comment'])
+
+      let currentUser = await prisma.user.findFirst({
+        where: {
+          email,
+        },
+      })
+
+      let fieldsToUpdate: Record<string, any> = {}
+
+      if (comment) fieldsToUpdate.comment = comment
+
+      if (Object.keys(fieldsToUpdate).length === 0) {
+        return ctx.response.status(400).json({
+          msg: 'No changes found to update',
+        })
+      }
+
+      if (!commentId) {
+        return ctx.response.status(400).json({
+          msg: 'No comment id present in the params',
+        })
+      }
+
+      let commentExists = await prisma.comment.findFirst({
+        where: {
+          id: commentId,
+        },
+      })
+
+      if (!commentExists) {
+        return ctx.response.status(404).json({
+          msg: 'No such comment found',
+        })
+      }
+
+      if (commentExists.authorId !== currentUser!.id) {
+        return ctx.response.status(400).json({
+          msg: "Cannot edit other user's comment",
+        })
+      }
+
+      await prisma.comment.update({
+        where: {
+          id: commentId,
+        },
+        data: fieldsToUpdate,
+      })
+
+      ctx.response.status(200).json({
+        msg: 'Comment updated successfully',
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
+
+  public async deleteComment(ctx: HttpContext) {
+    try {
+      let email = ctx.email
+      let commentId = Number(ctx.params.commentId)
+
+      if (!commentId) {
+        return ctx.response.status(400).json({
+          msg: 'No comment id present in the params',
+        })
+      }
+
+      let commentExists = await prisma.comment.findFirst({
+        where: {
+          id: commentId,
+        },
+      })
+
+      if (!commentExists) {
+        return ctx.response.status(404).json({
+          msg: 'No such comment found',
+        })
+      }
+
+      let currentUser = await prisma.user.findFirst({
+        where: {
+          email,
+        },
+      })
+
+      if (!currentUser) {
+        return ctx.response.status(404).json({
+          msg: 'No such user found',
+        })
+      }
+
+      if (currentUser.id !== commentExists.authorId) {
+        return ctx.response.status(409).json({
+          msg: "Cannot delete other user's comment",
+        })
+      }
+
+      await prisma.comment.delete({
+        where: {
+          id: commentId,
+        },
+      })
+
+      ctx.response.status(200).json({
+        msg: 'Comment deleted successfully',
+      })
+    } catch (error) {
+      return ctx.response.status(500).json({
+        msg: error instanceof Error ? error.message : 'Something went wrong with the server',
+      })
+    }
+  }
 }

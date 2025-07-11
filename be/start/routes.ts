@@ -32,6 +32,8 @@ router
 router
   .get('/api/view-friends', (ctx) => new UsersController().viewFriends(ctx))
   .use(middleware.user())
+
+// post endpoints
 router.post('/api/add-post', (ctx) => new PostsController().makePost(ctx)).use(middleware.user())
 router
   .patch('/api/update-post/:postId', (ctx) => new PostsController().editPost(ctx))
@@ -41,4 +43,13 @@ router
   .use(middleware.user())
 router
   .patch('/api/like-post/:postId', (ctx) => new PostsController().likePost(ctx))
+  .use(middleware.user())
+router
+  .post('/api/post/:postId/comment', (ctx) => new PostsController().commentPost(ctx))
+  .use(middleware.user())
+router
+  .patch('/api/post/comment/:commentId', (ctx) => new PostsController().editComment(ctx))
+  .use(middleware.user())
+router
+  .delete('/api/post/comment/delete/:commentId', (ctx) => new PostsController().deleteComment(ctx))
   .use(middleware.user())
