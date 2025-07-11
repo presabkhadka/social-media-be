@@ -29,7 +29,6 @@ model User {
   email            String          @unique
   password         String
   likedPost        Int[]
-  UserMessage      UserMessage[]
   sentRequests     FriendRequest[] @relation("SentRequests")
   recievedRequests FriendRequest[] @relation("RecieveRequests")
   Friendship       Friendship[]
@@ -50,22 +49,6 @@ model Posts {
 
   user    User      @relation(fields: [author], references: [id], onDelete: Cascade)
   Comment Comment[]
-}
-
-model Messages {
-  id          Int           @id @default(autoincrement())
-  content     String
-  UserMessage UserMessage[]
-}
-
-model UserMessage {
-  user_id    Int
-  message_id Int
-
-  user    User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  message Messages @relation(fields: [message_id], references: [id], onDelete: Cascade)
-
-  @@id([user_id, message_id])
 }
 
 model FriendRequest {
